@@ -1,0 +1,27 @@
+[
+    {
+        "username": "Test1",
+        "password": "123",
+        "display_name": "Operator1"
+    },
+    {
+        "username": "Test2",
+        "password": "123",
+        "display_name": "Operator2"
+    },
+    {
+        "username": "Test3",
+        "password": "123",
+        "display_name": "Operator3"
+    },
+    {
+        "username": "Test4",
+        "password": "123",
+        "display_name": "Operator4"
+    },
+    {
+        "username": "Test5",
+        "password": "123",
+        "display_name": "Operator5"
+    }
+]
