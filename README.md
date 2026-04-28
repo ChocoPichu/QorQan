@@ -44,7 +44,7 @@ Setup Instructions:
 2. Install dependencies: pip install -r requirements.txt.
 3. Populate TOKENS.txt with your API keys.
 4. Add operator Telegram IDs to admins.json.
-5. Run main.py and app.py concurrently.
+5. Run main.py and dashboard.py concurrently.
 
 Note: The database (qorgan.db) initializes automatically. 
 Always backup qorgan.db for legal and auditing purposes.
