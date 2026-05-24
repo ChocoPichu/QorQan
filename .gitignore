@@ -1,0 +1,8 @@
+.idea/
+.venv/
+__pycache__/
+*.pyc
+.env
+TOKENS.txt
+qorqan.db
+__pycache__/
