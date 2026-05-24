@@ -1,9 +1,11 @@
 # main.py
 import asyncio
 import logging
+
 from aiogram import Bot, Dispatcher
-from handlers import router
+
 from config import BOT_TOKEN
+from handlers import router
 
 TOKEN = BOT_TOKEN
 

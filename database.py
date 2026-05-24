@@ -1,11 +1,12 @@
-import sqlite3
 import json
 import os
-import datetime
-from typing import List, Dict, Any, Optional
-from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
+from typing import Any
+
+from werkzeug.security import check_password_hash, generate_password_hash
 
 DB_PATH = "qorqan.db"
+
 
 class DatabaseDAO:
     def __init__(self, db_path: str = DB_PATH):
@@ -93,20 +94,17 @@ class DatabaseDAO:
     def update_operator_presence(self, operator_id: int):
         """Updates the last_seen timestamp for an operator."""
         with self._get_connection() as conn:
-            conn.execute(
-                "UPDATE operators SET last_seen = CURRENT_TIMESTAMP WHERE id = ?",
-                (operator_id,)
-            )
+            conn.execute("UPDATE operators SET last_seen = CURRENT_TIMESTAMP WHERE id = ?", (operator_id,))
 
     def get_online_operators_count(self) -> int:
         """Counts operators active in the last 60 seconds."""
         with self._get_connection() as conn:
             # SQLite uses 'now' and '-1 minute' for time comparisons
             cursor = conn.execute("""
-                SELECT COUNT(*) as count FROM operators 
+                SELECT COUNT(*) as count FROM operators
                 WHERE last_seen > datetime('now', '-1 minute')
             """)
-            return cursor.fetchone()['count']
+            return cursor.fetchone()["count"]
 
     def _sync_operators(self):
         """Reads admins.json and safely adds them to the database."""
@@ -117,36 +115,36 @@ class DatabaseDAO:
             default_admins = [
                 {"username": "admin", "password": "123", "display_name": "Admin Boss"},
                 {"username": "op1", "password": "123", "display_name": "Operator One"},
-                {"username": "op2", "password": "123", "display_name": "Operator Two"}
+                {"username": "op2", "password": "123", "display_name": "Operator Two"},
             ]
             with open(json_file, "w", encoding="utf-8") as f:
                 json.dump(default_admins, f, indent=4)
 
         # 2. Read the json file
-        with open(json_file, "r", encoding="utf-8") as f:
+        with open(json_file, encoding="utf-8") as f:
             admins = json.load(f)
 
         # 3. Insert into DB if they don't already exist
         with self._get_connection() as conn:
             for admin in admins:
-                cursor = conn.execute("SELECT id FROM operators WHERE username = ?", (admin['username'],))
+                cursor = conn.execute("SELECT id FROM operators WHERE username = ?", (admin["username"],))
                 if not cursor.fetchone():
-                    pwd_hash = generate_password_hash(admin['password'])
+                    pwd_hash = generate_password_hash(admin["password"])
                     conn.execute(
                         "INSERT INTO operators (username, password_hash, display_name) VALUES (?, ?, ?)",
-                        (admin['username'], pwd_hash, admin['display_name'])
+                        (admin["username"], pwd_hash, admin["display_name"]),
                     )
 
     # --- AUTHENTICATION METHODS ---
-    def verify_operator(self, username, password) -> Optional[Dict]:
+    def verify_operator(self, username, password) -> dict | None:
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT * FROM operators WHERE username = ?", (username,))
             operator = cursor.fetchone()
-            if operator and check_password_hash(operator['password_hash'], password):
+            if operator and check_password_hash(operator["password_hash"], password):
                 return dict(operator)
             return None
 
-    def get_operator_by_id(self, operator_id) -> Optional[Dict]:
+    def get_operator_by_id(self, operator_id) -> dict | None:
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT * FROM operators WHERE id = ?", (operator_id,))
             row = cursor.fetchone()
@@ -157,7 +155,8 @@ class DatabaseDAO:
         """Creates or updates a user record. lang is saved if provided."""
         with self._get_connection() as conn:
             if lang:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO users (telegram_id, full_name, username, lang)
                     VALUES (?, ?, ?, ?)
                     ON CONFLICT(telegram_id) DO UPDATE SET
@@ -165,61 +164,76 @@ class DatabaseDAO:
                         username=excluded.username,
                         lang=excluded.lang,
                         last_seen=CURRENT_TIMESTAMP
-                """, (telegram_id, full_name, username, lang))
+                """,
+                    (telegram_id, full_name, username, lang),
+                )
             else:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO users (telegram_id, full_name, username)
                     VALUES (?, ?, ?)
                     ON CONFLICT(telegram_id) DO UPDATE SET
                         full_name=excluded.full_name,
                         username=excluded.username,
                         last_seen=CURRENT_TIMESTAMP
-                """, (telegram_id, full_name, username))
+                """,
+                    (telegram_id, full_name, username),
+                )
 
     def get_user_lang(self, telegram_id: int) -> str:
         """Returns the user's preferred language code, defaulting to 'ru'."""
         with self._get_connection() as conn:
-            cursor = conn.execute(
-                "SELECT lang FROM users WHERE telegram_id = ?", (telegram_id,)
-            )
+            cursor = conn.execute("SELECT lang FROM users WHERE telegram_id = ?", (telegram_id,))
             row = cursor.fetchone()
-            if row and row['lang']:
-                return row['lang']
-            return 'ru'
+            if row and row["lang"]:
+                return row["lang"]
+            return "ru"
 
     # --- SESSION METHODS ---
     def create_session(self, telegram_id: int, urgency: str) -> int:
         with self._get_connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 INSERT INTO sessions (telegram_id, urgency, status)
                 VALUES (?, ?, 'waiting')
-            """, (telegram_id, urgency))
+            """,
+                (telegram_id, urgency),
+            )
             return cursor.lastrowid
 
-    def get_active_session(self, telegram_id: int) -> Optional[Dict[str, Any]]:
+    def get_active_session(self, telegram_id: int) -> dict[str, Any] | None:
         with self._get_connection() as conn:
-            cursor = conn.execute("""
-                SELECT * FROM sessions 
+            cursor = conn.execute(
+                """
+                SELECT * FROM sessions
                 WHERE telegram_id = ? AND status IN ('waiting', 'active')
                 ORDER BY created_at DESC LIMIT 1
-            """, (telegram_id,))
+            """,
+                (telegram_id,),
+            )
             row = cursor.fetchone()
             return dict(row) if row else None
 
     def update_session_status(self, session_id: int, status: str, operator_id: int = None):
         with self._get_connection() as conn:
-            if status == 'closed':
-                conn.execute("""
-                    UPDATE sessions SET status = ?, closed_at = CURRENT_TIMESTAMP 
+            if status == "closed":
+                conn.execute(
+                    """
+                    UPDATE sessions SET status = ?, closed_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                """, (status, session_id))
+                """,
+                    (status, session_id),
+                )
             else:
-                conn.execute("""
-                    UPDATE sessions SET status = ?, operator_id = ? 
+                conn.execute(
+                    """
+                    UPDATE sessions SET status = ?, operator_id = ?
                     WHERE id = ?
-                """, (status, operator_id, session_id))
+                """,
+                    (status, operator_id, session_id),
+                )
 
-    def get_session_by_id(self, session_id: int) -> Optional[Dict[str, Any]]:
+    def get_session_by_id(self, session_id: int) -> dict[str, Any] | None:
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT * FROM sessions WHERE id = ?", (session_id,))
             row = cursor.fetchone()
@@ -229,38 +243,37 @@ class DatabaseDAO:
     def is_banned(self, telegram_id: int) -> bool:
         """Returns True if the user is on the blacklist."""
         with self._get_connection() as conn:
-            cursor = conn.execute(
-                "SELECT 1 FROM blacklist WHERE telegram_id = ?", (telegram_id,)
-            )
+            cursor = conn.execute("SELECT 1 FROM blacklist WHERE telegram_id = ?", (telegram_id,))
             return cursor.fetchone() is not None
 
-    def ban_user(self, telegram_id: int, full_name: str, username: str,
-                 reason: str, banned_by: str):
+    def ban_user(self, telegram_id: int, full_name: str, username: str, reason: str, banned_by: str):
         """Adds a user to the blacklist. Silently ignores if already banned."""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR IGNORE INTO blacklist
                     (telegram_id, full_name, username, reason, banned_by)
                 VALUES (?, ?, ?, ?, ?)
-            """, (telegram_id, full_name, username, reason, banned_by))
+            """,
+                (telegram_id, full_name, username, reason, banned_by),
+            )
 
     def unban_user(self, telegram_id: int):
         """Removes a user from the blacklist."""
         with self._get_connection() as conn:
             conn.execute("DELETE FROM blacklist WHERE telegram_id = ?", (telegram_id,))
 
-    def get_blacklist(self) -> List[Dict[str, Any]]:
+    def get_blacklist(self) -> list[dict[str, Any]]:
         """Returns all blacklisted users, newest first."""
         with self._get_connection() as conn:
-            cursor = conn.execute(
-                "SELECT * FROM blacklist ORDER BY banned_at DESC"
-            )
+            cursor = conn.execute("SELECT * FROM blacklist ORDER BY banned_at DESC")
             return [dict(row) for row in cursor.fetchall()]
 
     # --- DASHBOARD METHODS (UPDATED FOR MULTI-OPERATOR) ---
-    def get_dashboard_tickets(self, operator_id: int) -> List[Dict[str, Any]]:
+    def get_dashboard_tickets(self, operator_id: int) -> list[dict[str, Any]]:
         with self._get_connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT s.id, s.urgency, s.status, s.operator_id, s.created_at,
                        u.full_name, u.username,
                        EXISTS(
@@ -273,31 +286,42 @@ class DatabaseDAO:
                 JOIN users u ON s.telegram_id = u.telegram_id
                 WHERE s.status = 'waiting' OR (s.status = 'active' AND s.operator_id = ?)
                 ORDER BY s.status DESC, s.created_at ASC
-            """, (operator_id,))
+            """,
+                (operator_id,),
+            )
             return [dict(row) for row in cursor.fetchall()]
 
     # --- MESSAGE METHODS ---
     def add_message(self, session_id: int, sender_type: str, text: str, photo_id: str = None):
         """Inserts a new message. Kid messages start as unread (is_read=0)."""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO messages (session_id, sender_type, text, photo_id, is_read)
                 VALUES (?, ?, ?, ?, 0)
-            """, (session_id, sender_type, text, photo_id))
+            """,
+                (session_id, sender_type, text, photo_id),
+            )
 
     def mark_messages_read(self, session_id: int):
         """Marks all messages in a session as read. Called when operator opens a ticket."""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE messages SET is_read = 1
                 WHERE session_id = ? AND is_read = 0
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
 
-    def get_session_messages(self, session_id: int) -> List[Dict[str, Any]]:
+    def get_session_messages(self, session_id: int) -> list[dict[str, Any]]:
         with self._get_connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT * FROM messages WHERE session_id = ? ORDER BY timestamp ASC
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
             return [dict(row) for row in cursor.fetchall()]
 
 
