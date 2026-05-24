@@ -1,4 +1,4 @@
-# QorQan — Empowering Safety
+# QorQan Empowering Safety
 
 QorQan is a **crisis intervention system** designed for safe, anonymous communication between teenagers and a team of professional operators. Unlike simple chatbots, it's a hybrid infrastructure with a dedicated **Web Dashboard** ("The Vault") for operators.
 
@@ -8,13 +8,13 @@ QorQan is a **crisis intervention system** designed for safe, anonymous communic
 
 ## Features
 
-- **Multi-Operator Support** — Manage operators via `admins.json`
-- **Dynamic Queueing** — Real-time wait-time calculation based on online operators
-- **Media Support** — Handle text and photo evidence
-- **Language Localization** — Full RU, KZ, and EN support
-- **Session Auditing** — SQLite3 database with full chat history
-- **Blacklist** — Ban abusive users from the dashboard
-- **Unread Badges** — Dashboard shows unread messages per ticket
+- **Multi-Operator Support**: Manage operators via `admins.json`
+- **Dynamic Queueing**: Real-time wait-time calculation based on online operators
+- **Media Support**: Handle text and photo evidence
+- **Language Localization**: Full RU, KZ, and EN support
+- **Session Auditing**: SQLite3 database with full chat history
+- **Blacklist**: Ban abusive users from the dashboard
+- **Unread Badges**: Dashboard shows unread messages per ticket
 
 ## Screenshots
 
