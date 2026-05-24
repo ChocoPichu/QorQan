@@ -9,7 +9,7 @@ import pytest
 # Ensure the project root is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from database import DatabaseDAO
+from src.database import DatabaseDAO
 
 ADMINS_PATH = os.path.join(os.path.dirname(__file__), "..", "admins.json")
 BACKUP_PATH = ADMINS_PATH + ".bak"
