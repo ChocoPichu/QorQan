@@ -56,8 +56,6 @@ def logout():
 
 
 # --- DASHBOARD ROUTES (Protected) ---
-
-
 @app.route("/api/tickets", methods=["GET"])
 @limiter.limit("30 per minute")
 def get_tickets():
@@ -67,7 +65,7 @@ def get_tickets():
     operator_id = session["operator_id"]
 
     # --- PHASE 6 HEARTBEAT ---
-    # This tells the DB the operator is still active every 3 seconds
+    # This tells the DB the operator is still active every 3 seconds, you could tweak this if you need to.
     db.update_operator_presence(operator_id)
 
     tickets = db.get_dashboard_tickets(operator_id)
@@ -188,8 +186,6 @@ async def send_message():
 
 
 # --- PHASE 3: BLACKLIST / BAN HAMMER ---
-
-
 @app.route("/api/blacklist", methods=["GET"])
 @limiter.limit("20 per minute")
 def get_blacklist():

@@ -23,8 +23,6 @@ async def get_lang(state: FSMContext):
 async def set_language(callback: CallbackQuery, state: FSMContext):
     lang_code = callback.data.split("_")[1]
     await state.update_data(lang=lang_code)
-
-    # Persist the language choice to the DB so the dashboard can look it up
     user = callback.from_user
     username = f"@{user.username}" if user.username else "No Username"
     db.upsert_user(telegram_id=user.id, full_name=user.full_name, username=username, lang=lang_code)
@@ -38,7 +36,7 @@ async def set_language(callback: CallbackQuery, state: FSMContext):
 @router.message(Command("start"))
 async def start_handler(message: Message, state: FSMContext):
     data = await state.get_data()
-    lang = data.get("lang")  # None if first time
+    lang = data.get("lang")
 
     if not lang:
         await message.answer(
@@ -93,7 +91,6 @@ async def support_handler(message: Message, state: FSMContext):
     lang = await get_lang(state)
     t = texts.LANGUAGES[lang]
 
-    # --- PHASE 3: Blacklist gate — banned users are turned away immediately ---
     if db.is_banned(message.from_user.id):
         await message.answer(t["banned"])
         return
@@ -201,8 +198,6 @@ async def ingest_kid_message(message: Message, state: FSMContext):
 
 
 # --- 6. CLOSE CHAT ---
-
-
 @router.callback_query(F.data == "kid_close_chat")
 async def close_session_handler(callback: CallbackQuery, state: FSMContext):
     lang = await get_lang(state)

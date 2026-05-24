@@ -78,7 +78,7 @@ class DatabaseDAO:
             try:
                 conn.execute("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0")
             except Exception:
-                pass  # Column already exists safe to ignore
+                pass
             # 5. Blacklist
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS blacklist (
@@ -99,7 +99,6 @@ class DatabaseDAO:
     def get_online_operators_count(self) -> int:
         """Counts operators active in the last 60 seconds."""
         with self._get_connection() as conn:
-            # SQLite uses 'now' and '-1 minute' for time comparisons
             cursor = conn.execute("""
                 SELECT COUNT(*) as count FROM operators
                 WHERE last_seen > datetime('now', '-1 minute')
@@ -110,7 +109,7 @@ class DatabaseDAO:
         """Reads admins.json and safely adds them to the database."""
         json_file = "admins.json"
 
-        # 1. Create a dummy json file if it doesn't exist
+        # 1. Create a dummy json file if it doesn't exist. Hey if you're reading this, create admins.json please. Don't rely on this.
         if not os.path.exists(json_file):
             default_admins = [
                 {"username": "admin", "password": "123", "display_name": "Admin Boss"},

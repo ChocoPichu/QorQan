@@ -9,7 +9,6 @@ from src.config import BOT_TOKEN
 
 TOKEN = BOT_TOKEN
 
-
 async def main():
     logging.basicConfig(level=logging.INFO)
     bot = Bot(token=TOKEN)
@@ -17,9 +16,8 @@ async def main():
 
     dp.include_router(router)
 
-    print("Bot is running: t.me/QorganQorkakBot")
+    print("Bot is running")
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     try:

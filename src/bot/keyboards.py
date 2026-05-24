@@ -9,7 +9,6 @@ from aiogram.types.web_app_info import WebAppInfo
 
 from src.bot.texts import LANGUAGES
 
-
 def get_main_menu(lang="ru"):
     t = LANGUAGES[lang]
     buttons = [
@@ -18,7 +17,6 @@ def get_main_menu(lang="ru"):
     ]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
-
 def get_lang_menu():
     buttons = [
         [InlineKeyboardButton(text="Русский 🇷🇺", callback_data="lang_ru")],
@@ -26,7 +24,6 @@ def get_lang_menu():
         [InlineKeyboardButton(text="English 🇺🇸", callback_data="lang_en")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
 
 def get_urgency_menu(lang="ru"):
     t = LANGUAGES[lang]
@@ -38,7 +35,6 @@ def get_urgency_menu(lang="ru"):
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-
 def get_waiting_menu(lang="ru"):
     t = LANGUAGES[lang]
     buttons = [
@@ -46,7 +42,6 @@ def get_waiting_menu(lang="ru"):
         [InlineKeyboardButton(text=t["btn_cancel_wait"], callback_data="cancel_waiting")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
 
 def get_kid_close_menu(lang="ru"):
     t = LANGUAGES[lang]
