@@ -91,7 +91,7 @@ Add operator accounts in `admins.json`:
 ]
 ```
 
-Login at `http://localhost:5000` with these credentials.
+Log in at http://localhost:5000 or your custom website using these credentials.
 
 ---
 
