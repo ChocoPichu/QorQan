@@ -113,7 +113,8 @@ QorQan/
 │   │   └── templates/      # HTML templates
 │   ├── config.py           # Environment config loader
 │   └── database.py         # SQLite3 data access layer
-├── tests/                  # Pytest tests
+├── docs/                  # Documentation (CONTRIBUTING, SECURITY)
+├── tests/                 # Pytest tests
 ├── admins.json             # Operator credentials
 ├── .env                    # Sensitive tokens (not committed)
 ├── .env.example            # Template for .env
