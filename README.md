@@ -16,9 +16,8 @@ QorQan is a **crisis intervention system** designed for safe, anonymous communic
 - **Blacklist**: Ban abusive users from the dashboard
 - **Unread Badges**: Dashboard shows unread messages per ticket
 
-## Screenshots
-
-*(Add screenshots here — Telegram bot menu, Dashboard login, Ticket queue)*
+## Demonstration
+![Local GIF](docs/assets/demonstration.gif)
 
 ---
 
@@ -65,10 +64,10 @@ FLASK_SECRET="your_random_secret_key_here"
 The system has two components that run **simultaneously**:
 
 ```bash
-# Terminal 1 — Telegram Bot
+# Terminal 1 Telegram Bot
 python -m src.bot.main
 
-# Terminal 2 — Web Dashboard (http://localhost:5000)
+# Terminal 2 Web Dashboard (http://localhost:5000)
 python -m src.dashboard.app
 ```
 
@@ -155,7 +154,7 @@ QorQan/
 ## FAQ
 
 **Q: Why does the dashboard show "no operators online"?**  
-A: Operators must be logged into the dashboard — their presence is tracked every 3 seconds.
+A: Operators must be logged into the dashboard their presence is tracked every 3 seconds.
 
 **Q: Can I use PostgreSQL instead of SQLite?**  
 A: The current implementation uses SQLite. Swap the connection in `database.py` for production.
