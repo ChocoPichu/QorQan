@@ -106,10 +106,8 @@ class DatabaseDAO:
             return cursor.fetchone()["count"]
 
     def _sync_operators(self):
-        """Reads admins.json and safely adds them to the database."""
         json_file = "admins.json"
 
-        # 1. Create a dummy json file if it doesn't exist. Hey if you're reading this, create admins.json please. Don't rely on this.
         if not os.path.exists(json_file):
             default_admins = [
                 {"username": "admin", "password": "123", "display_name": "Admin Boss"},
@@ -119,11 +117,9 @@ class DatabaseDAO:
             with open(json_file, "w", encoding="utf-8") as f:
                 json.dump(default_admins, f, indent=4)
 
-        # 2. Read the json file
         with open(json_file, encoding="utf-8") as f:
             admins = json.load(f)
 
-        # 3. Insert into DB if they don't already exist
         with self._get_connection() as conn:
             for admin in admins:
                 cursor = conn.execute("SELECT id FROM operators WHERE username = ?", (admin["username"],))
@@ -151,33 +147,19 @@ class DatabaseDAO:
 
     # --- USER METHODS ---
     def upsert_user(self, telegram_id: int, full_name: str, username: str, lang: str = None):
-        """Creates or updates a user record. lang is saved if provided."""
         with self._get_connection() as conn:
-            if lang:
-                conn.execute(
-                    """
-                    INSERT INTO users (telegram_id, full_name, username, lang)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(telegram_id) DO UPDATE SET
-                        full_name=excluded.full_name,
-                        username=excluded.username,
-                        lang=excluded.lang,
-                        last_seen=CURRENT_TIMESTAMP
-                """,
-                    (telegram_id, full_name, username, lang),
-                )
-            else:
-                conn.execute(
-                    """
-                    INSERT INTO users (telegram_id, full_name, username)
-                    VALUES (?, ?, ?)
-                    ON CONFLICT(telegram_id) DO UPDATE SET
-                        full_name=excluded.full_name,
-                        username=excluded.username,
-                        last_seen=CURRENT_TIMESTAMP
-                """,
-                    (telegram_id, full_name, username),
-                )
+            conn.execute(
+                """
+                INSERT INTO users (telegram_id, full_name, username, lang)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(telegram_id) DO UPDATE SET
+                    full_name=excluded.full_name,
+                    username=excluded.username,
+                    lang=COALESCE(excluded.lang, lang),
+                    last_seen=CURRENT_TIMESTAMP
+            """,
+                (telegram_id, full_name, username, lang),
+            )
 
     def get_user_lang(self, telegram_id: int) -> str:
         """Returns the user's preferred language code, defaulting to 'ru'."""

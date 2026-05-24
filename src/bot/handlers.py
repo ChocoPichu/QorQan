@@ -10,7 +10,10 @@ from src.database import db
 router = Router()
 
 
-# Helper to get language from FSM state
+def _format_user(user):
+    return f"@{user.username}" if user.username else "No Username"
+
+
 async def get_lang(state: FSMContext):
     data = await state.get_data()
     return data.get("lang", "ru")
@@ -24,69 +27,51 @@ async def set_language(callback: CallbackQuery, state: FSMContext):
     lang_code = callback.data.split("_")[1]
     await state.update_data(lang=lang_code)
     user = callback.from_user
-    username = f"@{user.username}" if user.username else "No Username"
-    db.upsert_user(telegram_id=user.id, full_name=user.full_name, username=username, lang=lang_code)
-
+    db.upsert_user(telegram_id=user.id, full_name=user.full_name, username=_format_user(user), lang=lang_code)
     t = texts.LANGUAGES[lang_code]
     await callback.message.answer(t["start"], reply_markup=keyboards.get_main_menu(lang_code))
     await callback.answer()
 
 
 # --- 2. MAIN MENU ---
+
+_INFO_REPLIES = {}
+_LANG_BUTTONS = set()
+for _lc in ("ru", "kz", "en"):
+    _t = texts.LANGUAGES[_lc]
+    _INFO_REPLIES[_t["btn_about"]] = _t["about"]
+    _INFO_REPLIES[_t["btn_tips"]] = _t["tips"]
+    _INFO_REPLIES[_t["btn_lang"]] = _t["lang_select"]
+    _LANG_BUTTONS.add(_t["btn_lang"])
+
+
 @router.message(Command("start"))
 async def start_handler(message: Message, state: FSMContext):
     data = await state.get_data()
     lang = data.get("lang")
-
     if not lang:
         await message.answer(
             "👋 Привет / Сәлем / Hello!\n\nПожалуйста, выберите язык:\nТілді таңдаңыз:\nPlease choose your language:",
             reply_markup=keyboards.get_lang_menu(),
         )
         return
-
     await state.set_state(None)
     await state.update_data(lang=lang)
-
     await message.answer(texts.LANGUAGES[lang]["start"], reply_markup=keyboards.get_main_menu(lang))
 
 
-@router.message(
-    F.text.in_(
-        [texts.LANGUAGES["ru"]["btn_about"], texts.LANGUAGES["kz"]["btn_about"], texts.LANGUAGES["en"]["btn_about"]]
-    )
-)
-async def about_handler(message: Message, state: FSMContext):
-    lang = await get_lang(state)
-    await message.answer(texts.LANGUAGES[lang]["about"])
-
-
-@router.message(
-    F.text.in_(
-        [texts.LANGUAGES["ru"]["btn_tips"], texts.LANGUAGES["kz"]["btn_tips"], texts.LANGUAGES["en"]["btn_tips"]]
-    )
-)
-async def tips_handler(message: Message, state: FSMContext):
-    lang = await get_lang(state)
-    await message.answer(texts.LANGUAGES[lang]["tips"])
-
-
-@router.message(
-    F.text.in_(
-        [texts.LANGUAGES["ru"]["btn_lang"], texts.LANGUAGES["kz"]["btn_lang"], texts.LANGUAGES["en"]["btn_lang"]]
-    )
-)
-async def lang_handler(message: Message, state: FSMContext):
-    lang = await get_lang(state)
-    await message.answer(texts.LANGUAGES[lang]["lang_select"], reply_markup=keyboards.get_lang_menu())
+@router.message(F.text.in_(list(_INFO_REPLIES)))
+async def info_handler(message: Message, state: FSMContext):
+    kwargs = {"reply_markup": keyboards.get_lang_menu()} if message.text in _LANG_BUTTONS else {}
+    await message.answer(_INFO_REPLIES[message.text], **kwargs)
 
 
 # --- 3. CONTACTING THE OPERATOR ---
-@router.message(
-    F.text.in_(
-        [texts.LANGUAGES["ru"]["btn_chat"], texts.LANGUAGES["kz"]["btn_chat"], texts.LANGUAGES["en"]["btn_chat"]]
-    )
-)
+
+_CHAT_BUTTONS = {texts.LANGUAGES[lc]["btn_chat"] for lc in ("ru", "kz", "en")}
+
+
+@router.message(F.text.in_(list(_CHAT_BUTTONS)))
 async def support_handler(message: Message, state: FSMContext):
     lang = await get_lang(state)
     t = texts.LANGUAGES[lang]
@@ -95,7 +80,6 @@ async def support_handler(message: Message, state: FSMContext):
         await message.answer(t["banned"])
         return
 
-    # Gatekeeper check
     active_session = db.get_active_session(message.from_user.id)
     if active_session:
         status = active_session["status"]
@@ -118,8 +102,8 @@ async def support_handler(message: Message, state: FSMContext):
 async def urgency_callback(callback: CallbackQuery, state: FSMContext):
     lang = await get_lang(state)
     t = texts.LANGUAGES[lang]
-
     action = callback.data.split("_")[1]
+
     if action == "cancel":
         await state.clear()
         await state.update_data(lang=lang)
@@ -128,9 +112,7 @@ async def urgency_callback(callback: CallbackQuery, state: FSMContext):
         return
 
     user = callback.from_user
-    username = f"@{user.username}" if user.username else "No Username"
-    db.upsert_user(telegram_id=user.id, full_name=user.full_name, username=username, lang=lang)
-
+    db.upsert_user(telegram_id=user.id, full_name=user.full_name, username=_format_user(user), lang=lang)
     session_id = db.create_session(telegram_id=user.id, urgency=action)
 
     online_count = db.get_online_operators_count()
@@ -145,13 +127,16 @@ async def urgency_callback(callback: CallbackQuery, state: FSMContext):
 
     await state.set_state(UserState.waiting_for_operator)
     await state.update_data(session_id=session_id)
-
-    formatted_wait_text = t["wait"].format(wait_time=time_str)
-    await callback.message.edit_text(formatted_wait_text, reply_markup=keyboards.get_waiting_menu(lang))
+    await callback.message.edit_text(
+        t["wait"].format(wait_time=time_str),
+        reply_markup=keyboards.get_waiting_menu(lang),
+    )
     await callback.answer()
 
 
 # --- 4. WAITING ROOM ---
+
+
 @router.callback_query(F.data == "cancel_waiting")
 async def cancel_waiting_callback(callback: CallbackQuery, state: FSMContext):
     lang = await get_lang(state)
@@ -161,7 +146,6 @@ async def cancel_waiting_callback(callback: CallbackQuery, state: FSMContext):
     if current_state == UserState.waiting_for_operator.state:
         data = await state.get_data()
         session_id = data.get("session_id")
-
         if session_id:
             db.update_session_status(session_id=session_id, status="closed")
 
@@ -175,11 +159,12 @@ async def cancel_waiting_callback(callback: CallbackQuery, state: FSMContext):
 
 
 # --- 5. RECEIVING MESSAGES DURING ACTIVE SESSION ---
+
+
 @router.message(F.text & ~F.text.startswith("/"))
 async def ingest_kid_message(message: Message, state: FSMContext):
     lang = await get_lang(state)
     t = texts.LANGUAGES[lang]
-
     active_session = db.get_active_session(message.from_user.id)
     if not active_session:
         await message.answer(texts.LANGUAGES[lang]["start"], reply_markup=keyboards.get_main_menu(lang))
@@ -198,18 +183,18 @@ async def ingest_kid_message(message: Message, state: FSMContext):
 
 
 # --- 6. CLOSE CHAT ---
+
+
 @router.callback_query(F.data == "kid_close_chat")
 async def close_session_handler(callback: CallbackQuery, state: FSMContext):
     lang = await get_lang(state)
     t = texts.LANGUAGES[lang]
-
     active_session = db.get_active_session(callback.from_user.id)
     if active_session:
         db.update_session_status(session_id=active_session["id"], status="closed")
 
     await state.clear()
     await state.update_data(lang=lang)
-
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(t["chat_closed_kid"], reply_markup=keyboards.get_main_menu(lang))
     await callback.answer()
