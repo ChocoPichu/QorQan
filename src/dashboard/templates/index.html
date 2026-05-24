@@ -8,22 +8,22 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="bg-gray-100 h-screen flex overflow-hidden" x-data="operatorDashboard()">
+<body class="bg-gray-900 h-screen flex overflow-hidden" x-data="operatorDashboard()">
 
-    <div x-show="!isLoggedIn" class="fixed inset-0 bg-gray-100 z-50 flex items-center justify-center" x-cloak>
-        <div class="bg-white p-8 rounded-lg shadow-md w-96">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Вход для операторов</h2>
+    <div x-show="!isLoggedIn" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center" x-cloak>
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-96 border border-gray-700">
+            <h2 class="text-2xl font-bold text-center text-gray-100 mb-6">Вход для операторов</h2>
             <form @submit.prevent="login">
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Логин</label>
-                    <input x-model="loginData.username" type="text" class="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Логин</label>
+                    <input x-model="loginData.username" type="text" class="w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none" required>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Пароль</label>
-                    <input x-model="loginData.password" type="password" class="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Пароль</label>
+                    <input x-model="loginData.password" type="password" class="w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none" required>
                 </div>
-                <div x-show="loginError" class="text-red-500 text-sm mb-4 text-center" x-text="loginError"></div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                <div x-show="loginError" class="text-red-400 text-sm mb-4 text-center" x-text="loginError"></div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-md transition-colors">
                     Войти
                 </button>
             </form>
@@ -32,25 +32,25 @@
 
     <div x-show="isLoggedIn" class="w-full h-full flex" x-cloak>
 
-        <aside class="w-1/3 bg-white border-r border-gray-200 flex flex-col h-full">
+        <aside class="w-1/3 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
 
-            <div class="p-4 border-b border-gray-200 bg-blue-50 text-blue-800 flex justify-between items-center">
+            <div class="p-4 border-b border-gray-700 bg-gray-750 flex justify-between items-center">
                 <div>
-                    <span class="font-bold text-lg">QorQan's Dashboard</span>
-                    <span class="block text-xs text-blue-600" x-text="'Вы вошли как: ' + operatorName"></span>
+                    <span class="font-bold text-lg text-gray-100">QorQan's Dashboard</span>
+                    <span class="block text-xs text-indigo-400" x-text="'Вы вошли как: ' + operatorName"></span>
                 </div>
-                <button @click="logout" class="text-xs bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded-md transition-colors">Выйти</button>
+                <button @click="logout" class="text-xs bg-red-900/50 text-red-300 hover:bg-red-800 px-3 py-1 rounded-md transition-colors">Выйти</button>
             </div>
 
-            <div class="flex border-b border-gray-200">
+            <div class="flex border-b border-gray-700">
                 <button @click="activeTab = 'tickets'"
                         class="flex-1 py-2 text-sm font-medium transition-colors"
-                        :class="activeTab === 'tickets' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        :class="activeTab === 'tickets' ? 'text-indigo-400 border-b-2 border-indigo-500' : 'text-gray-400 hover:text-gray-200'">
                     🎫 Заявки
                 </button>
                 <button @click="activeTab = 'blacklist'; fetchBlacklist()"
                         class="flex-1 py-2 text-sm font-medium transition-colors"
-                        :class="activeTab === 'blacklist' ? 'text-red-600 border-b-2 border-red-600' : 'text-gray-500 hover:text-gray-700'">
+                        :class="activeTab === 'blacklist' ? 'text-red-400 border-b-2 border-red-500' : 'text-gray-400 hover:text-gray-200'">
                     🔨 Чёрный список
                 </button>
             </div>
@@ -59,27 +59,27 @@
                 <template x-for="ticket in tickets" :key="ticket.id">
                     <div @click="selectTicket(ticket)"
                          class="p-4 rounded-lg cursor-pointer border transition-colors shadow-sm"
-                         :class="activeTicket?.id === ticket.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'">
+                         :class="activeTicket?.id === ticket.id ? 'border-indigo-500 bg-gray-700' : 'border-gray-600 hover:bg-gray-750'">
 
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-800" x-text="ticket.full_name"></span>
+                                <span class="font-bold text-gray-100" x-text="ticket.full_name"></span>
                                 <span x-show="ticket.has_unread"
                                       class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 unread-pulse"
                                       title="Новое сообщение!"></span>
                             </div>
                             <span class="text-xs px-2 py-1 rounded-full text-white"
-                                  :class="{ 'bg-red-500': ticket.urgency === 'danger', 'bg-green-500': ticket.urgency === 'safe', 'bg-yellow-500': ticket.urgency === 'notsure' }"
+                                  :class="{ 'bg-red-600': ticket.urgency === 'danger', 'bg-green-600': ticket.urgency === 'safe', 'bg-yellow-600': ticket.urgency === 'notsure' }"
                                   x-text="ticket.urgency === 'danger' ? 'ОПАСНО' : (ticket.urgency === 'safe' ? 'В БЕЗОПАСНОСТИ' : 'НЕ УВЕРЕН')"></span>
                         </div>
 
-                        <div class="flex justify-between text-sm text-gray-500">
+                        <div class="flex justify-between text-sm text-gray-400">
                             <span x-text="'Статус: ' + (ticket.status === 'waiting' ? 'В очереди' : 'Активен')"></span>
                             <span x-text="new Date(ticket.created_at).toLocaleTimeString()"></span>
                         </div>
 
                         <template x-if="ticket.status === 'waiting'">
-                            <button @click.stop="acceptTicket(ticket.id)" class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-md text-sm font-medium transition-colors">
+                            <button @click.stop="acceptTicket(ticket.id)" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-md text-sm font-medium transition-colors">
                                 Принять чат
                             </button>
                         </template>
@@ -89,49 +89,49 @@
             </div>
 
             <div x-show="activeTab === 'blacklist'" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <div x-show="blacklist.length === 0" class="text-center text-gray-400 mt-10 text-sm">
+                <div x-show="blacklist.length === 0" class="text-center text-gray-500 mt-10 text-sm">
                     🎉 Заблокированных пользователей нет!
                 </div>
                 <template x-for="user in blacklist" :key="user.telegram_id">
-                    <div class="p-3 rounded-lg border border-red-200 bg-red-50 shadow-sm">
+                    <div class="p-3 rounded-lg border border-red-900 bg-red-900/20 shadow-sm">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="font-bold text-gray-800 text-sm" x-text="user.full_name"></p>
-                                <p class="text-xs text-gray-500" x-text="user.username"></p>
+                                <p class="font-bold text-gray-100 text-sm" x-text="user.full_name"></p>
+                                <p class="text-xs text-gray-400" x-text="user.username"></p>
                             </div>
                             <button @click="unbanUser(user.telegram_id)"
-                                    class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded transition-colors">
+                                    class="text-xs bg-green-900/50 text-green-300 hover:bg-green-800 px-2 py-1 rounded transition-colors">
                                 ✅ Разблокировать
                             </button>
                         </div>
-                        <p class="text-xs text-red-600 mt-1" x-text="'Причина: ' + user.reason"></p>
-                        <p class="text-xs text-gray-400 mt-0.5" x-text="'Забанил: ' + user.banned_by + ' · ' + new Date(user.banned_at).toLocaleDateString()"></p>
+                        <p class="text-xs text-red-400 mt-1" x-text="'Причина: ' + user.reason"></p>
+                        <p class="text-xs text-gray-500 mt-0.5" x-text="'Забанил: ' + user.banned_by + ' · ' + new Date(user.banned_at).toLocaleDateString()"></p>
                     </div>
                 </template>
             </div>
 
         </aside>
 
-        <main class="w-2/3 flex flex-col h-full bg-gray-50">
-            <div x-show="!activeTicket" class="flex-1 flex items-center justify-center text-gray-400">
+        <main class="w-2/3 flex flex-col h-full bg-gray-900">
+            <div x-show="!activeTicket" class="flex-1 flex items-center justify-center text-gray-500">
                 <p>Выберите заявку, чтобы просмотреть чат.</p>
             </div>
 
             <template x-if="activeTicket">
                 <div class="flex-1 flex flex-col h-full">
-                    <header class="p-4 bg-white border-b border-gray-200 flex justify-between items-center shadow-sm">
+                    <header class="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center shadow-sm">
                         <div>
-                            <h2 class="font-bold text-lg text-gray-800" x-text="'Чат с ' + activeTicket.full_name"></h2>
-                            <p class="text-sm text-gray-500" x-text="activeTicket.username"></p>
+                            <h2 class="font-bold text-lg text-gray-100" x-text="'Чат с ' + activeTicket.full_name"></h2>
+                            <p class="text-sm text-gray-400" x-text="activeTicket.username"></p>
                         </div>
                         <div class="flex gap-2">
                             <template x-if="activeTicket.status === 'active'">
                                 <button @click="openBanModal()"
-                                        class="px-4 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 rounded-md font-medium text-sm transition-colors">
-                                    🔨 Заблокировать
+                                        class="px-4 py-2 bg-orange-900/50 text-orange-300 hover:bg-orange-800 rounded-md font-medium text-sm transition-colors">
+                                    🔴 Заблокировать
                                 </button>
                             </template>
-                            <button @click="closeTicket(activeTicket.id)" class="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-md font-medium text-sm transition-colors">
+                            <button @click="closeTicket(activeTicket.id)" class="px-4 py-2 bg-red-900/50 text-red-300 hover:bg-red-800 rounded-md font-medium text-sm transition-colors">
                                 Завершить сессию
                             </button>
                         </div>
@@ -140,7 +140,7 @@
                     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-container">
                         <template x-for="msg in messages" :key="msg.id">
                             <div class="flex" :class="msg.sender_type === 'operator' ? 'justify-end' : 'justify-start'">
-                                <div class="max-w-[70%] rounded-lg px-4 py-2" :class="msg.sender_type === 'operator' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'">
+                                <div class="max-w-[70%] rounded-lg px-4 py-2" :class="msg.sender_type === 'operator' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'">
                                     <p x-text="msg.text" class="break-words"></p>
                                     <template x-if="msg.photo_id"><span class="text-xs italic opacity-75 mt-1 block">[Фото]</span></template>
                                     <span class="text-[10px] opacity-70 block mt-1 text-right" x-text="new Date(msg.timestamp).toLocaleTimeString()"></span>
@@ -149,14 +149,14 @@
                         </template>
                     </div>
 
-                    <div class="p-4 bg-white border-t border-gray-200" x-show="activeTicket.status === 'active'">
+                    <div class="p-4 bg-gray-800 border-t border-gray-700" x-show="activeTicket.status === 'active'">
                         <form @submit.prevent="sendMessage" class="flex gap-2">
-                            <input type="text" x-model="newMessage" placeholder="Введите сообщение..." class="flex-1 border border-gray-300 rounded-md px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500" autocomplete="off">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition-colors" :disabled="!newMessage.trim()">Отправить</button>
+                            <input type="text" x-model="newMessage" placeholder="Введите сообщение..." class="flex-1 border border-gray-600 rounded-md px-4 py-2 bg-gray-700 text-gray-100 outline-none focus:ring-2 focus:ring-indigo-500" autocomplete="off">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md font-medium transition-colors" :disabled="!newMessage.trim()">Отправить</button>
                         </form>
                     </div>
 
-                    <div class="p-4 bg-yellow-50 border-t border-yellow-200 text-center text-yellow-700 text-sm" x-show="activeTicket.status === 'waiting'">
+                    <div class="p-4 bg-yellow-900/30 border-t border-yellow-800 text-center text-yellow-300 text-sm" x-show="activeTicket.status === 'waiting'">
                         Вы должны принять эту заявку, прежде чем сможете отправлять сообщения.
                     </div>
                 </div>
@@ -165,23 +165,23 @@
     </div>
 
     <div x-show="banModal.open"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
          x-cloak>
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
-            <h3 class="text-lg font-bold text-gray-800 mb-1">🔨 Блокировка пользователя</h3>
-            <p class="text-sm text-gray-500 mb-4" x-text="'Вы собираетесь заблокировать: ' + (activeTicket?.full_name || '')"></p>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Причина (необязательно)</label>
+        <div class="bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-700">
+            <h3 class="text-lg font-bold text-gray-100 mb-1">Блокировка пользователя</h3>
+            <p class="text-sm text-gray-400 mb-4" x-text="'Вы собираетесь заблокировать: ' + (activeTicket?.full_name || '')"></p>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Причина (необязательно)</label>
             <textarea x-model="banModal.reason"
                       rows="3"
                       placeholder="например: спам, агрессия, троллинг..."
-                      class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-orange-400 text-sm resize-none mb-4"></textarea>
+                      class="w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-gray-100 outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none mb-4"></textarea>
             <div class="flex gap-3 justify-end">
                 <button @click="banModal.open = false"
-                        class="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
+                        class="px-4 py-2 text-sm rounded-md border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors">
                     Отмена
                 </button>
                 <button @click="confirmBan()"
-                        class="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors">
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-600 text-white rounded-md font-medium transition-colors">
                     🔨 Подтвердить бан
                 </button>
             </div>
@@ -189,7 +189,6 @@
     </div>
 
     <style>
-        /* CSS stays the same as it's non-visual logic/animation */
         [x-cloak] { display: none !important; }
         @keyframes unread-ping {
             0%, 100% { transform: scale(1); opacity: 1; }
@@ -209,11 +208,9 @@
         }
         .toast {
             pointer-events: auto;
-            background: #1e293b;
-            color: #f1f5f9;
             padding: 0.75rem 1.25rem;
             border-radius: 0.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             font-size: 0.875rem;
             font-weight: 500;
             display: flex;
@@ -222,14 +219,14 @@
             animation: toast-in 0.3s ease;
             max-width: 320px;
         }
-        .toast.toast-warn { background: #b45309; }
-        .toast.toast-info { background: #1d4ed8; }
-        .toast.toast-success { background: #15803d; }
-        .toast.toast-error { background: #991b1b; }
         @keyframes toast-in {
             from { opacity: 0; transform: translateY(12px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* Tailwind doesn't include bg-gray-750 by default */
+        .bg-gray-750 { background-color: #2d3748; }
+        .hover\:bg-gray-750:hover { background-color: #2d3748; }
     </style>
 
     <div id="toast-container"></div>
