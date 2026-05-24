@@ -1,14 +1,21 @@
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from flask import Flask, jsonify, render_template, request, session
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from src.bot import keyboards, texts
 from src.config import BOT_TOKEN, FLASK_SECRET
 from src.database import db
 
 app = Flask(__name__)
-# Secret key is REQUIRED for Flask sessions to work.
 app.secret_key = FLASK_SECRET
+
+limiter = Limiter(
+    app=app,
+    key_func=lambda: str(session.get("operator_id", get_remote_address())),
+    default_limits=["200 per day", "60 per hour"],
+)
 
 
 @app.route("/")
@@ -18,6 +25,7 @@ def index():
 
 # --- AUTHENTICATION ROUTES ---
 @app.route("/api/auth/me", methods=["GET"])
+@limiter.limit("30 per minute")
 def get_me():
     if "operator_id" in session:
         return jsonify({"status": "success", "operator_name": session["display_name"]})
@@ -25,6 +33,7 @@ def get_me():
 
 
 @app.route("/api/auth/login", methods=["POST"])
+@limiter.limit("10 per minute", key_func=get_remote_address)
 def login():
     data = request.json
     username = data.get("username")
@@ -40,6 +49,7 @@ def login():
 
 
 @app.route("/api/auth/logout", methods=["POST"])
+@limiter.limit("10 per minute")
 def logout():
     session.clear()
     return jsonify({"status": "success"})
@@ -49,6 +59,7 @@ def logout():
 
 
 @app.route("/api/tickets", methods=["GET"])
+@limiter.limit("30 per minute")
 def get_tickets():
     if "operator_id" not in session:
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
@@ -64,6 +75,7 @@ def get_tickets():
 
 
 @app.route("/api/ticket/accept", methods=["POST"])
+@limiter.limit("10 per minute")
 async def accept_ticket():
     if "operator_id" not in session:
         return jsonify({"status": "error"}), 401
@@ -95,6 +107,7 @@ async def accept_ticket():
 
 
 @app.route("/api/ticket/close", methods=["POST"])
+@limiter.limit("10 per minute")
 async def close_ticket():
     if "operator_id" not in session:
         return jsonify({"status": "error"}), 401
@@ -125,6 +138,7 @@ async def close_ticket():
 
 
 @app.route("/api/messages/<int:session_id>", methods=["GET"])
+@limiter.limit("30 per minute")
 def get_messages(session_id):
     if "operator_id" not in session:
         return jsonify({"status": "error"}), 401
@@ -133,6 +147,7 @@ def get_messages(session_id):
 
 
 @app.route("/api/messages/mark_read", methods=["POST"])
+@limiter.limit("30 per minute")
 def mark_messages_read():
     """Called when operator opens a ticket — clears unread badge."""
     if "operator_id" not in session:
@@ -148,6 +163,7 @@ def mark_messages_read():
 
 
 @app.route("/api/messages/send", methods=["POST"])
+@limiter.limit("20 per minute")
 async def send_message():
     if "operator_id" not in session:
         return jsonify({"status": "error"}), 401
@@ -175,6 +191,7 @@ async def send_message():
 
 
 @app.route("/api/blacklist", methods=["GET"])
+@limiter.limit("20 per minute")
 def get_blacklist():
     """Returns the full list of banned users."""
     if "operator_id" not in session:
@@ -184,6 +201,7 @@ def get_blacklist():
 
 
 @app.route("/api/user/ban", methods=["POST"])
+@limiter.limit("5 per minute")
 def ban_user():
     """Bans a user by their telegram_id from the currently open session."""
     if "operator_id" not in session:
@@ -222,6 +240,7 @@ def ban_user():
 
 
 @app.route("/api/user/unban", methods=["POST"])
+@limiter.limit("5 per minute")
 def unban_user():
     """Removes a user from the blacklist."""
     if "operator_id" not in session:

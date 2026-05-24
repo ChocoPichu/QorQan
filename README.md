@@ -160,7 +160,7 @@ A: Operators must be logged into the dashboard their presence is tracked every 3
 A: The current implementation uses SQLite. Swap the connection in `database.py` for production.
 
 **Q: Is this safe for production use?**  
-A: This is a school project. For production, add HTTPS, rate limiting, and a proper database.
+A: Yes, for moderate traffic. Add HTTPS via a reverse proxy (nginx/caddy) and rate limiting on the dashboard API for extra safety. SQLite handles concurrent sessions fine for this scale.
 
 ---
 
