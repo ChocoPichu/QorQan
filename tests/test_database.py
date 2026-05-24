@@ -7,10 +7,9 @@ import tempfile
 import pytest
 
 # Ensure the project root is importable
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from database import DatabaseDAO
-
 
 ADMINS_PATH = os.path.join(os.path.dirname(__file__), "..", "admins.json")
 BACKUP_PATH = ADMINS_PATH + ".bak"
@@ -32,9 +31,7 @@ def db():
 
     # Write test operators to admins.json
     with open(ADMINS_PATH, "w", encoding="utf-8") as f:
-        json.dump([
-            {"username": "test_op", "password": "test123", "display_name": "Tester"}
-        ], f)
+        json.dump([{"username": "test_op", "password": "test123", "display_name": "Tester"}], f)
 
     dao = DatabaseDAO(db_path=db_path)
     dao._sync_operators()
@@ -88,19 +85,16 @@ class TestSessions:
 
 class TestBlacklist:
     def test_ban_and_is_banned(self, db):
-        db.ban_user(telegram_id=1, full_name="Eve", username="@eve",
-                    reason="Spam", banned_by="admin")
+        db.ban_user(telegram_id=1, full_name="Eve", username="@eve", reason="Spam", banned_by="admin")
         assert db.is_banned(1) is True
 
     def test_unban(self, db):
-        db.ban_user(telegram_id=1, full_name="Eve", username="@eve",
-                    reason="Spam", banned_by="admin")
+        db.ban_user(telegram_id=1, full_name="Eve", username="@eve", reason="Spam", banned_by="admin")
         db.unban_user(1)
         assert db.is_banned(1) is False
 
     def test_get_blacklist(self, db):
-        db.ban_user(telegram_id=1, full_name="Eve", username="@eve",
-                    reason="Spam", banned_by="admin")
+        db.ban_user(telegram_id=1, full_name="Eve", username="@eve", reason="Spam", banned_by="admin")
         bl = db.get_blacklist()
         assert len(bl) == 1
         assert bl[0]["reason"] == "Spam"
@@ -128,8 +122,7 @@ class TestMessages:
     def test_add_message_with_photo(self, db):
         db.upsert_user(telegram_id=1, full_name="Bob", username="@bob", lang="ru")
         session_id = db.create_session(telegram_id=1, urgency="danger")
-        db.add_message(session_id=session_id, sender_type="kid",
-                       text="See this", photo_id="abc123")
+        db.add_message(session_id=session_id, sender_type="kid", text="See this", photo_id="abc123")
         msgs = db.get_session_messages(session_id)
         assert msgs[0]["photo_id"] == "abc123"
 

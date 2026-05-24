@@ -4,8 +4,8 @@ import logging
 
 from aiogram import Bot, Dispatcher
 
-from config import BOT_TOKEN
-from handlers import router
+from src.bot.handlers import router
+from src.config import BOT_TOKEN
 
 TOKEN = BOT_TOKEN
 

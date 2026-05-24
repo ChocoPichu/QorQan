@@ -2,10 +2,9 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from flask import Flask, jsonify, render_template, request, session
 
-import keyboards
-import texts
-from config import BOT_TOKEN, FLASK_SECRET
-from database import db
+from src.bot import keyboards, texts
+from src.config import BOT_TOKEN, FLASK_SECRET
+from src.database import db
 
 app = Flask(__name__)
 # Secret key is REQUIRED for Flask sessions to work.

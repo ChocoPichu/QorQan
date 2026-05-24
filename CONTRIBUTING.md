@@ -27,4 +27,4 @@ Thanks for your interest in contributing!
 
 ## Code of Conduct
 
-Be respectful and constructive. This is a school project — everyone is learning.
+Be respectful and constructive. This is a school project made for fun, everyone is learning.

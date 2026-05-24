@@ -3,10 +3,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-import keyboards
-import texts
-from database import db
-from states import UserState
+from src.bot import keyboards, texts
+from src.bot.states import UserState
+from src.database import db
 
 router = Router()
 

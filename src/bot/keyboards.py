@@ -7,7 +7,7 @@ from aiogram.types import (
 )
 from aiogram.types.web_app_info import WebAppInfo
 
-from texts import LANGUAGES
+from src.bot.texts import LANGUAGES
 
 
 def get_main_menu(lang="ru"):

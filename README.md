@@ -66,10 +66,10 @@ The system has two components that run **simultaneously**:
 
 ```bash
 # Terminal 1 — Telegram Bot
-python main.py
+python -m src.bot.main
 
 # Terminal 2 — Web Dashboard (http://localhost:5000)
-python dashboard.py
+python -m src.dashboard.app
 ```
 
 Or use the convenience script:
@@ -100,19 +100,25 @@ Login at `http://localhost:5000` with these credentials.
 
 ```
 QorQan/
-├── main.py           # Telegram Bot entry point
-├── dashboard.py      # Operator Web Dashboard (Flask)
-├── config.py         # Environment config loader
-├── database.py       # SQLite3 data access layer
-├── handlers.py       # Telegram bot message handlers
-├── keyboards.py      # Reply & inline keyboard builders
-├── states.py         # FSM state definitions
-├── texts.py          # RU/KZ/EN localization strings
-├── admins.json       # Operator credentials
-├── static/           # Dashboard frontend (CSS, JS)
-├── templates/        # Dashboard HTML templates
-├── .env              # Sensitive tokens (not committed)
-└── requirements.txt  # Python dependencies
+├── src/
+│   ├── bot/                # Telegram Bot
+│   │   ├── main.py         # Entry point
+│   │   ├── handlers.py     # Message handlers & FSM
+│   │   ├── keyboards.py    # Reply & inline keyboards
+│   │   ├── states.py       # FSM state definitions
+│   │   └── texts.py        # RU/KZ/EN localization
+│   ├── dashboard/          # Operator Web Dashboard (Flask)
+│   │   ├── app.py          # Flask app + API routes
+│   │   ├── static/         # CSS, JS
+│   │   └── templates/      # HTML templates
+│   ├── config.py           # Environment config loader
+│   └── database.py         # SQLite3 data access layer
+├── tests/                  # Pytest tests
+├── admins.json             # Operator credentials
+├── .env                    # Sensitive tokens (not committed)
+├── .env.example            # Template for .env
+├── pyproject.toml           # Ruff & pytest config
+└── requirements.txt        # Python dependencies
 ```
 
 ---
